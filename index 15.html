@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gamepad Tester</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #gamepad-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    .gamepad-info {
+      margin: 5px;
+      padding: 10px;
+      background-color: #ddd;
+      border-radius: 5px;
+      width: 300px;
+      text-align: left;
+    }
+
+    .gamepad-button {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .gamepad-stick {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Gamepad Tester</h1>
+  <div id="gamepad-info">
+    <div class="gamepad-info">
+      <h3>Buttons Pressed:</h3>
+      <div id="buttons-list">No buttons pressed yet</div>
+    </div>
+    <div class="gamepad-info">
+      <h3>Analog Stick Movement:</h3>
+      <div id="stick-info">Move the analog sticks to see data</div>
+    </div>
+  </div>
+
+  <script>
+    let gamepad = null;
+
+    // Function to handle gamepad input
+    function updateGamepadData() {
+      const gamepads = navigator.getGamepads();
+      gamepad = gamepads[0]; // Get the first connected gamepad
+
+      if (gamepad) {
+        updateButtonData();
+        updateStickData();
+      }
+
+      // Request next frame to keep checking for gamepad input
+      requestAnimationFrame(updateGamepadData);
+    }
+
+    // Function to update button presses
+    function updateButtonData() {
+      const buttonsList = document.getElementById("buttons-list");
+      let buttonsPressed = [];
+
+      gamepad.buttons.forEach((button, index) => {
+        if (button.pressed) {
+          buttonsPressed.push(`Button ${index}`);
+        }
+      });
+
+      if (buttonsPressed.length > 0) {
+        buttonsList.textContent = `Pressed: ${buttonsPressed.join(", ")}`;
+      } else {
+        buttonsList.textContent = "No buttons pressed yet";
+      }
+    }
+
+    // Function to update analog stick movement
+    function updateStickData() {
+      const stickInfo = document.getElementById("stick-info");
+      const leftStickX = gamepad.axes[0].toFixed(2); // Left Stick X-axis
+      const leftStickY = gamepad.axes[1].toFixed(2); // Left Stick Y-axis
+      const rightStickX = gamepad.axes[2].toFixed(2); // Right Stick X-axis
+      const rightStickY = gamepad.axes[3].toFixed(2); // Right Stick Y-axis
+
+      stickInfo.innerHTML = `
+        Left Stick: X=${leftStickX}, Y=${leftStickY} <br>
+        Right Stick: X=${rightStickX}, Y=${rightStickY}
+      `;
+    }
+
+    // Function to check if a gamepad is connected
+    function checkGamepad() {
+      if (navigator.getGamepads) {
+        // If gamepads are supported, start tracking the gamepad input
+        window.addEventListener("gamepadconnected", (event) => {
+          console.log(`Gamepad connected: ${event.gamepad.id}`);
+          updateGamepadData(); // Start updating gamepad data
+        });
+        window.addEventListener("gamepaddisconnected", (event) => {
+          console.log(`Gamepad disconnected: ${event.gamepad.id}`);
+          document.getElementById("buttons-list").textContent = "No gamepad connected";
+          document.getElementById("stick-info").textContent = "No gamepad connected";
+        });
+      } else {
+        alert("Gamepad API is not supported on this device.");
+      }
+    }
+
+    // Start checking for gamepad connection
+    checkGamepad();
+  </script>
+</body>
+</html>
